@@ -1,2 +1,5 @@
 anime_venv
 artifacts
+__pycache__
+Logs
+.log
