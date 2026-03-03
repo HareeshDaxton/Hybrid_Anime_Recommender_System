@@ -21,7 +21,7 @@ class DataIngestion:
         
     def download_csv_from_gcp(self):
         try:
-            client = storage.Client.from_service_account_json("your path to service_account_json") 
+            client = storage.Client.from_service_account_json("C:/Users/Hareesh/Downloads/anime-recommendation-489009-3ee222bb74e3.json")
             bucket = client.bucket(self.bucket_name)
             
             for file_name in self.bucket_file_name:
