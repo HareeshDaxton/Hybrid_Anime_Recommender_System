@@ -1,6 +1,6 @@
 anime_venv
-artifacts
-__pycache__
-Logs
-.log
-.h5
+artifacts/
+__pycache__/
+Logs/
+*.log
+*.h5
