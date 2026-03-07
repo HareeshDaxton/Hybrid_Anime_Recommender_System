@@ -6,7 +6,7 @@ import numpy as np
 from tensorflow.keras.callbacks import ModelCheckpoint,LearningRateScheduler,TensorBoard,EarlyStopping
 from src.logging.logger import get_logger
 from src.exception.custom_exception import CustomException
-from src.base_model import BaseModel
+from src.base_model.base_model import BaseModel
 from config.path_config import *
 
 logger = get_logger(__name__)
@@ -40,7 +40,9 @@ class ModeTraining:
     
             base_model = BaseModel(config_path=CONFIG_PATH)
             
-            model = base_model.RecommenderNet(n_users=n_users, n_anime=n_anime)
+            model = base_model.RecommederNet(n_users=n_users, n_anime=n_anime)
+            
+            
             
             start_lr = 0.0001
             min_lr = 0.0001
@@ -119,8 +121,8 @@ class ModeTraining:
             model.save(MODEL_PATH)
             logger.info(f"Model saved to {MODEL_PATH}")
             
-            user_weights = self.extract_weights('user_weights', model)
-            anime_weights = self.extract_weights('anime_weights', model)
+            user_weights = self.extract_weights('user_embedding', model)
+            anime_weights = self.extract_weights('anime_embedding', model)
             
             joblib.dump(user_weights, USER_WEIGHTS_PATH)
             joblib.dump(anime_weights, ANIME_WEIGHTS_PATH)

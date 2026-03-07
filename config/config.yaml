@@ -6,7 +6,7 @@ data_ingestion :
     - "animelist.csv"
 
 
-midel:
+model:
   embedding_size: 128
   loss : binary_crossentropy
   optimizer: Adam
