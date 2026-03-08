@@ -1,5 +1,6 @@
-anime_venv
-artifacts/
+anime_venv/
+artifacts/*
+!artifacts/*.dvc
 __pycache__/
 Logs/
 *.log
