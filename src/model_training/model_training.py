@@ -15,6 +15,14 @@ class ModeTraining:
     def __init__(self, data_path):
         self.data_path = data_path
         logger.info("Model Training & COMET ML initialized..")
+        
+        self.experiment = comet_ml.Experiment(
+            api_key="PHlC66a4zyBjU2AOz2LvZZxQJ",
+            project_name="hybrid_anime_recommendation",
+            workspace="hareeshdaxton"
+        )
+        
+        logger.info("Model Training & COMET ML initialized..")
     
     def load_data(self):
         try:
@@ -90,6 +98,12 @@ class ModeTraining:
             
                 model.load_weights(CHECKPOINT_FILE_PATH)
                 logger.info("Model training Completedd.....") 
+                
+                for epoch in range(len(history.history['loss'])):
+                    train_loss = history.history['loss'][epoch]
+                    val_loss = history.history['val_loss'][epoch]
+                
+            
 
             except Exception as e:
                 raise CustomException("Model training failedd.....")
@@ -127,7 +141,10 @@ class ModeTraining:
             joblib.dump(user_weights, USER_WEIGHTS_PATH)
             joblib.dump(anime_weights, ANIME_WEIGHTS_PATH)
             
-        
+            self.experiment.log_asset(MODEL_PATH)
+            self.experiment.log_asset(ANIME_WEIGHTS_PATH)
+            self.experiment.log_asset(USER_WEIGHTS_PATH)
+
             logger.info("User and Anime weights saved sucesfully....")
         except Exception as e:
             logger.error(str(e))
