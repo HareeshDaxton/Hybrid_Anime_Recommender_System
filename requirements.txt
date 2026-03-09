@@ -1,6 +1,7 @@
 pandas
 numpy
 setuptools
+requests
 google-cloud-storage
 pyyaml
 matplotlib
@@ -10,4 +11,5 @@ comet-ml
 dvc
 dvc-gs
 flask
+flask-cors
 joblib

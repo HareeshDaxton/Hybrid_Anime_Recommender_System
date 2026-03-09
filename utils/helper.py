@@ -25,7 +25,7 @@ def getSynopsis(anime, path_synopsis_df):
     
 def find_similar_animes(name, path_anime_weights, path_anime2anime_encoded, path_anime2anime_decoded, path_anime_df, n=10, return_dist=False, neg=False):
     # Get the anime_id for the given name
-    anime_weights = joblib.load(path_anime_df)
+    anime_weights = joblib.load(path_anime_weights)
     anime2anime_encoded = joblib.load(path_anime2anime_encoded)
     anime2anime_decoded = joblib.load(path_anime2anime_decoded)
     
@@ -62,7 +62,7 @@ def find_similar_animes(name, path_anime_weights, path_anime2anime_encoded, path
        
 
        
-        anime_frame = getAnimeFeame(decoded_id, df)
+        anime_frame = getAnimeFeame(decoded_id, path_anime_df)
 
         anime_name = anime_frame.eng_version.values[0]
         genre = anime_frame.Genres.values[0]
@@ -150,15 +150,12 @@ def get_user_preferences(user_id , path_rating_df , path_anime_df ):
 
 def get_user_recommendations(similar_users , user_pref ,path_anime_df , path_synopsis_df, path_rating_df, n=10):
 
-    df = pd.read_csv(path_anime_df)
-    synopsis_df = pd.read_csv(path_synopsis_df)
-    rating_df = pd.read_csv(path_rating_df)
-
+    
     recommended_animes = []
     anime_list = []
 
     for user_id in similar_users.similar_users.values:
-        pref_list = get_user_preferences(int(user_id) , rating_df, df)
+        pref_list = get_user_preferences(int(user_id) , path_rating_df, path_anime_df)
 
         pref_list = pref_list[~pref_list.eng_version.isin(user_pref.eng_version.values)]
 
@@ -174,10 +171,10 @@ def get_user_recommendations(similar_users , user_pref ,path_anime_df , path_syn
                 n_user_pref = sorted_list[sorted_list.index == anime_name].values[0][0]
 
                 if isinstance(anime_name,str):
-                    frame = getAnimeFeame(anime_name,df)
+                    frame = getAnimeFeame(anime_name,path_anime_df)
                     anime_id = frame.anime_id.values[0]
                     genre = frame.Genres.values[0]
-                    synopsis = getSynopsis(int(anime_id),synopsis_df)
+                    synopsis = getSynopsis(int(anime_id),path_synopsis_df)
 
                     recommended_animes.append({
                         "n" : n_user_pref,

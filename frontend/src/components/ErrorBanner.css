@@ -1,0 +1,38 @@
+.error-banner {
+  position: fixed;
+  bottom: 32px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 300;
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-md);
+  padding: var(--space-md) var(--space-lg);
+  min-width: 320px;
+  max-width: 560px;
+  background: rgba(20, 5, 5, 0.95);
+  border: 1px solid rgba(239, 68, 68, 0.4);
+  border-radius: var(--radius-lg);
+  backdrop-filter: blur(16px);
+  box-shadow: 0 8px 32px rgba(239, 68, 68, 0.15);
+  animation: fadeUp 0.4s ease;
+}
+.error-icon { font-size: 1.25rem; flex-shrink: 0; margin-top: 2px; }
+.error-content { flex: 1; display: flex; flex-direction: column; gap: 3px; }
+.error-title { font-size: 0.85rem; font-weight: 700; color: #f87171; font-family: 'Outfit', sans-serif; }
+.error-msg { font-size: 0.82rem; color: rgba(248,113,113,0.75); line-height: 1.5; }
+.error-dismiss {
+  width: 28px; height: 28px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(239,68,68,0.15);
+  border-radius: 50%;
+  color: #f87171;
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: background var(--t-fast);
+  border: 1px solid rgba(239,68,68,0.3);
+}
+.error-dismiss:hover { background: rgba(239,68,68,0.3); }

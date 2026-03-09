@@ -1,0 +1,58 @@
+.skeleton-card {
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--clr-border);
+  overflow: hidden;
+  background: var(--clr-bg-card);
+}
+
+.skeleton-line,
+.skeleton-poster,
+.skeleton-pill {
+  background: linear-gradient(
+    90deg,
+    rgba(255,255,255,0.04) 0%,
+    rgba(255,255,255,0.12) 40%,
+    rgba(255,255,255,0.04) 80%
+  );
+  background-size: 400px 100%;
+  animation: shimmer 1.5s linear infinite;
+  border-radius: var(--radius-sm);
+}
+
+.skeleton-poster {
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  border-radius: 0;
+}
+
+.skeleton-body {
+  padding: 14px 16px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.skeleton-title {
+  height: 16px;
+  width: 85%;
+}
+
+.skeleton-genres {
+  display: flex;
+  gap: 6px;
+}
+.skeleton-pill {
+  height: 20px;
+  width: 64px;
+  border-radius: var(--radius-pill);
+}
+
+.skeleton-score {
+  height: 10px;
+  width: 100%;
+}
+
+.skeleton-meta {
+  height: 10px;
+  width: 65%;
+}
