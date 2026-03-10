@@ -13,3 +13,4 @@ dvc-gs
 flask
 flask-cors
 joblib
+python-dotenv

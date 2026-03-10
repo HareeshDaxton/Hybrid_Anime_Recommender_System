@@ -3,21 +3,39 @@ import sys
 import comet_ml
 import joblib
 import numpy as np
-from tensorflow.keras.callbacks import ModelCheckpoint,LearningRateScheduler,TensorBoard,EarlyStopping
+
+import tensorflow as tf
+from tensorflow.keras.regularizers import l2
+from tensorflow.keras.models import Model
+from tensorflow.keras.optimizers import Adam
+import tensorflow as tf
+from tensorflow.keras.callbacks import ModelCheckpoint, LearningRateScheduler, ReduceLROnPlateau, EarlyStopping
+
+
+
 from src.logging.logger import get_logger
 from src.exception.custom_exception import CustomException
 from src.base_model.base_model import BaseModel
 from config.path_config import *
+from dotenv import load_dotenv
+load_dotenv()
 
 logger = get_logger(__name__)
+API = os.environ.get("COMET_API_KEY")
 
 class ModeTraining:
     def __init__(self, data_path):
         self.data_path = data_path
         logger.info("Model Training & COMET ML initialized..")
         
+        if not API:
+            raise EnvironmentError(
+                "COMET_API_KEY environment variable is not set. "
+                "Run: export COMET_API_KEY='your_api_key'"
+            )
+            
         self.experiment = comet_ml.Experiment(
-            api_key="PHlC66a4zyBjU2AOz2LvZZxQJ",
+            api_key=API,
             project_name="hybrid_anime_recommendation",
             workspace="hareeshdaxton"
         )
@@ -28,9 +46,9 @@ class ModeTraining:
         try:
             
             x_train_arr = joblib.load(X_TRAIN_ARRAY)
-            x_test_arr = joblib.load(X_TEST_ARRAY)
-            y_train = joblib.load(Y_TRAIN)
-            y_test = joblib.load(Y_TEST)
+            x_test_arr  = joblib.load(X_TEST_ARRAY)
+            y_train     = joblib.load(Y_TRAIN)
+            y_test      = joblib.load(Y_TEST)
             
             logger.info("Data loaded sucesfully for Model Trainig")
             return x_train_arr, x_test_arr, y_train, y_test
@@ -49,7 +67,6 @@ class ModeTraining:
             base_model = BaseModel(config_path=CONFIG_PATH)
             
             model = base_model.RecommederNet(n_users=n_users, n_anime=n_anime)
-            
             
             
             start_lr = 0.0001
@@ -76,9 +93,25 @@ class ModeTraining:
 
             model_checkpoint = ModelCheckpoint(filepath=CHECKPOINT_FILE_PATH, save_weights_only=True, monitor='val_loss', save_best_only=True)
 
-            early_stopping = EarlyStopping(patience=3, monitor='val_loss', mode='min', restore_best_weights=True)
+            early_stopping = EarlyStopping(patience=5, monitor='val_loss', mode='min', restore_best_weights=True)
             
             my_call_back = [model_checkpoint, lr_callback, early_stopping]
+            
+            hparams = dict(
+                n_users=n_users,
+                n_anime=n_anime,
+                embedding_dim=128,
+                dropout_rate=0.4,
+                l2_reg=1e-5,
+                batch_size=10000,   
+                epochs=25,
+                start_lr=1e-5,
+                max_lr=1e-3,
+                min_lr=1e-5,
+                warmup_epochs=5,
+                sustain_epochs=3,
+                exp_decay=0.85,
+            )
             
             os.makedirs(os.path.dirname(CHECKPOINT_FILE_PATH), exist_ok=True)
             os.makedirs(MODEL_DIR, exist_ok=True)
@@ -89,8 +122,8 @@ class ModeTraining:
                 history = model.fit(
                 x=x_train_arr,
                 y=y_train,
-                batch_size=batch_size,
-                epochs=20,
+                batch_size=hparams['batch_size'],
+                epochs=hparams['epochs'],
                 verbose=1,
                 validation_data=(x_test_arr, y_test),
                 callbacks=my_call_back

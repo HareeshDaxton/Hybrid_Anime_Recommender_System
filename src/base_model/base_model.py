@@ -1,13 +1,24 @@
 from tensorflow.keras.models import Model
-from tensorflow.keras.layers import Input,Embedding,Dot,Flatten,Dense,Activation,BatchNormalization
+from tensorflow.keras.layers import Input,Embedding,Dot,Flatten,Dense,Activation,BatchNormalization, Dropout
 from utils.common_functions import read_yaml_file
-
+import tensorflow as tf
 from src.logging.logger import get_logger
 from src.exception.custom_exception import CustomException
 
 logger = get_logger(__name__)
 
+
+def rmse(y_true, y_pred):
+    return tf.sqrt(tf.reduce_mean(tf.square(y_true - y_pred)))
+
+def r2_score(y_true, y_pred):
+    ss_res = tf.reduce_sum(tf.square(y_true - y_pred))
+    ss_tot = tf.reduce_sum(tf.square(y_true - tf.reduce_mean(y_true)))
+    return 1 - (ss_res / (ss_tot + tf.keras.backend.epsilon()))
+
+
 class BaseModel:
+    
     def __init__(self, config_path):
         try:
             self.config = read_yaml_file(config_path)
@@ -31,15 +42,42 @@ class BaseModel:
             
             x = Flatten()(x)
             
-            x = Dense(1, kernel_initializer='he_normal')(x)
-            x= BatchNormalization()(x)
-            x = Activation('sigmoid')(x)
+            x = Dense(256, kernel_initializer='he_normal')(x)
+            x = BatchNormalization()(x)
+            x = Activation('relu')(x)
+            x = Dropout(0.4)(x)
+
+            x = Dense(128, kernel_initializer='he_normal')(x)
+            x = BatchNormalization()(x)
+            x = Activation('relu')(x)
+            x = Dropout(0.3)(x)
             
-            model = Model(inputs=[user, anime], outputs=x )
+            x = Dense(128, kernel_initializer='he_normal')(x)
+            x = BatchNormalization()(x)
+            x = Activation('relu')(x)
+            x = Dropout(0.3)(x)
+            
+            x = Dense(64, kernel_initializer='he_normal')(x)
+            x = BatchNormalization()(x)
+            x = Activation('relu')(x)
+            x = Dropout(0.3)(x)
+            
+            x = Dense(64, kernel_initializer='he_normal')(x)
+            x = BatchNormalization()(x)
+            x = Activation('relu')(x)
+            x = Dropout(0.3)(x)
+
+            x = Dense(32, kernel_initializer='he_normal')(x)
+            x = BatchNormalization()(x)
+            x = Activation('relu')(x)
+
+            output = Dense(1, activation="linear")(x)
+            
+            model = Model(inputs=[user, anime], outputs=output )
             model.compile(
                 loss= self.config['model']['loss'], 
                 optimizer= self.config['model']['optimizer'], 
-                metrics= self.config['model']['metrics']
+                metrics= self.config['model']['metrics'] + [r2_score,rmse]
                 )
             
             logger.info("Model created sucesfully....")
