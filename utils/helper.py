@@ -89,42 +89,50 @@ def find_similar_users(item_input , path_user_weights , path_user2user_encoded ,
         user2user_encoded = joblib.load(path_user2user_encoded)
         user2user_decoded = joblib.load(path_user2user_decoded)
         
-        
-        index=item_input
+        index = item_input
         encoded_index = user2user_encoded.get(index)
+
+        # ── BUG FIX: user not in training data (filtered out at pre-processing) ──
+        # When encoded_index is None, weights[None] adds a new axis and produces
+        # shape (1, N, 128) instead of (128,), causing the dot-product to crash.
+        if encoded_index is None:
+            print(f"User {item_input} not found in training data (was filtered out). Returning empty.")
+            return pd.DataFrame(columns=["similar_users", "similarity"])
 
         weights = user_weights
 
-        dists = np.dot(weights,weights[encoded_index])
+        dists = np.dot(weights, weights[encoded_index])
         sorted_dists = np.argsort(dists)
 
-        n=n+1
+        n = n + 1
 
         if neg:
             closest = sorted_dists[:n]
         else:
             closest = sorted_dists[-n:]
-            
 
         if return_dist:
-            return dists,closest
+            return dists, closest
         
         SimilarityArr = []
 
         for close in closest:
             similarity = dists[close]
 
-            if isinstance(item_input,int):
+            if isinstance(item_input, int):
                 decoded_id = user2user_decoded.get(close)
                 SimilarityArr.append({
-                    "similar_users" : decoded_id,
-                    "similarity" : similarity
+                    "similar_users": decoded_id,
+                    "similarity": similarity
                 })
-        similar_users = pd.DataFrame(SimilarityArr).sort_values(by="similarity",ascending=False)
+
+        similar_users = pd.DataFrame(SimilarityArr).sort_values(by="similarity", ascending=False)
         similar_users = similar_users[similar_users.similar_users != item_input]
         return similar_users
+
     except Exception as e:
-        print("Error Occured",e)
+        print("Error Occured", e)
+        return pd.DataFrame(columns=["similar_users", "similarity"])
 
         
 
@@ -133,6 +141,10 @@ def get_user_preferences(user_id , path_rating_df , path_anime_df ):
     df = pd.read_csv(path_anime_df)
 
     animes_watched_by_user = rating_df[rating_df.user_id == user_id]
+
+    # ── BUG FIX: user has no ratings in processed dataset ──
+    if animes_watched_by_user.empty:
+        return pd.DataFrame(columns=["eng_version", "Genres"])
 
     user_rating_percentile = np.percentile(animes_watched_by_user.rating , 75)
 
@@ -150,7 +162,6 @@ def get_user_preferences(user_id , path_rating_df , path_anime_df ):
 
 def get_user_recommendations(similar_users , user_pref ,path_anime_df , path_synopsis_df, path_rating_df, n=10):
 
-    
     recommended_animes = []
     anime_list = []
 
@@ -163,28 +174,30 @@ def get_user_recommendations(similar_users , user_pref ,path_anime_df , path_syn
             anime_list.append(pref_list.eng_version.values)
 
     if anime_list:
-            anime_list = pd.DataFrame(anime_list)
+        anime_list = pd.DataFrame(anime_list)
 
-            sorted_list = pd.DataFrame(pd.Series(anime_list.values.ravel()).value_counts()).head(n)
+        sorted_list = pd.DataFrame(pd.Series(anime_list.values.ravel()).value_counts()).head(n)
 
-            for i,anime_name in enumerate(sorted_list.index):
-                n_user_pref = sorted_list[sorted_list.index == anime_name].values[0][0]
+        for i, anime_name in enumerate(sorted_list.index):
+            n_user_pref = sorted_list[sorted_list.index == anime_name].values[0][0]
 
-                if isinstance(anime_name,str):
-                    frame = getAnimeFeame(anime_name,path_anime_df)
+            if isinstance(anime_name, str):
+                try:
+                    frame = getAnimeFeame(anime_name, path_anime_df)
+                    if frame.empty:
+                        continue
                     anime_id = frame.anime_id.values[0]
                     genre = frame.Genres.values[0]
-                    synopsis = getSynopsis(int(anime_id),path_synopsis_df)
 
+                    # NOTE: synopsis is intentionally NOT fetched here — it caused
+                    # IndexError for anime missing from synopsis_df. Synopsis is
+                    # fetched separately per-anime in app.py for the final response.
                     recommended_animes.append({
                         "n" : n_user_pref,
                         "anime_name" : anime_name,
                         "Genres" : genre,
-                        "Synopsis": synopsis
                     })
+                except Exception:
+                    continue
+
     return pd.DataFrame(recommended_animes).head(n)
-            
-
-
-
-    

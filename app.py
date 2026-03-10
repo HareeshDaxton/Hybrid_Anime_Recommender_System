@@ -6,28 +6,21 @@ from flask_cors import CORS
 
 from config.path_config import *
 from utils.helper import getAnimeFeame, getSynopsis
-from pipelines.prediction_pipeline import hybrid_recommendation
+from pipelines.prediction_pipeline import recommendation_by_anime_name
 
 app = Flask(__name__)
-CORS(app)  # Allow all origins for GCP + local Vite dev
+CORS(app)
 
 
 # ─────────────────────────────
-#  AniList batched image fetcher
-#  Makes ONE GraphQL request for up to 10 anime at once using aliases.
-#  Falls back to Jikan per-anime if AniList returns nothing for that title.
+#  AniList batched image fetcher  (1 HTTP call for all N anime)
 # ─────────────────────────────
 def fetch_images_batch(anime_results):
-    """Fetch all poster images in a single AniList GraphQL query.
-    Returns dict: { name -> image_url }
-    """
-    # Build query aliases: a0, a1 … a9
     entries = [(i, a) for i, a in enumerate(anime_results) if a.get("anime_id")]
-
     if not entries:
         return {}
 
-    var_decls = ", ".join(f"$id{i}: Int" for i, _ in entries)
+    var_decls   = ", ".join(f"$id{i}: Int" for i, _ in entries)
     alias_blocks = " ".join(
         f"a{i}: Media(idMal: $id{i}, type: ANIME) {{ coverImage {{ extraLarge large }} }}"
         for i, _ in entries
@@ -36,7 +29,6 @@ def fetch_images_batch(anime_results):
     variables = {f"id{i}": a["anime_id"] for i, a in entries}
 
     image_map = {}
-
     try:
         res = requests.post(
             "https://graphql.anilist.co",
@@ -53,19 +45,15 @@ def fetch_images_batch(anime_results):
                 if url:
                     image_map[a["name"]] = url
     except Exception:
-        pass  # Proceed to per-anime Jikan fallback below
+        pass
 
-    # Jikan fallback for any anime that AniList missed
-    missing = [a for i, a in entries if a["name"] not in image_map]
+    # Jikan fallback for any missed
+    missing = [a for _, a in entries if a["name"] not in image_map]
     for a in missing:
         try:
-            jr = requests.get(
-                f"https://api.jikan.moe/v4/anime/{a['anime_id']}",
-                timeout=6,
-            )
+            jr = requests.get(f"https://api.jikan.moe/v4/anime/{a['anime_id']}", timeout=6)
             if jr.ok:
-                jd = jr.json()
-                img = jd.get("data", {}).get("images", {}).get("jpg", {})
+                img = jr.json().get("data", {}).get("images", {}).get("jpg", {})
                 url = img.get("large_image_url") or img.get("image_url")
                 if url:
                     image_map[a["name"]] = url
@@ -76,7 +64,7 @@ def fetch_images_batch(anime_results):
 
 
 # ─────────────────────────────
-#  Health check (GCP / Cloud Run)
+#  Health check
 # ─────────────────────────────
 @app.route("/api/health", methods=["GET"])
 def health():
@@ -84,32 +72,49 @@ def health():
 
 
 # ─────────────────────────────
-#  Recommendations endpoint
+#  Anime name autocomplete search
+# ─────────────────────────────
+@app.route("/api/search", methods=["GET"])
+def search():
+    q = request.args.get("q", "").strip()
+    if len(q) < 2:
+        return jsonify([]), 200
+    try:
+        anime_df = pd.read_csv(DF)
+        mask = anime_df["eng_version"].str.lower().str.contains(q.lower(), na=False)
+        matches = anime_df[mask]["eng_version"].dropna().unique().tolist()
+        matches.sort(key=lambda x: (not x.lower().startswith(q.lower()), x))
+        return jsonify(matches[:15]), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+# ─────────────────────────────
+#  Recommendations endpoint  (accepts anime_name now)
 # ─────────────────────────────
 @app.route("/api/recommend", methods=["POST"])
 def recommend():
     data = request.get_json(force=True)
 
-    user_id = data.get("user_id")
-    user_weight = float(data.get("user_weight", 0.5))
+    anime_name    = data.get("anime_name", "").strip()
+    user_weight   = float(data.get("user_weight", 0.5))
     content_weight = float(data.get("content_weight", 0.5))
 
-    if user_id is None:
-        return jsonify({"error": "user_id is required"}), 400
+    if not anime_name:
+        return jsonify({"error": "anime_name is required"}), 400
 
     try:
-        user_id = int(user_id)
-    except (ValueError, TypeError):
-        return jsonify({"error": "user_id must be an integer"}), 400
-
-    try:
-        anime_names = hybrid_recommendation(user_id, user_weight=user_weight, content_weight=content_weight)
+        anime_names = recommendation_by_anime_name(anime_name, user_weight=user_weight, content_weight=content_weight)
+    except ValueError as e:
+        return jsonify({"error": str(e)}), 404
     except Exception as e:
         return jsonify({"error": f"Recommendation failed: {str(e)}"}), 500
 
-    # Enrich each recommendation with metadata from local CSVs
-    anime_df = pd.read_csv(DF)
+    if not anime_names:
+        return jsonify({"error": f"No recommendations found for '{anime_name}'. Try a more popular title."}), 404
 
+    # Enrich with metadata
+    anime_df = pd.read_csv(DF)
     results = []
     for name in anime_names:
         try:
@@ -123,14 +128,6 @@ def recommend():
                 genres = [g.strip() for g in str(genres_raw).split(",")] if pd.notna(genres_raw) else []
                 score = row["Score"].values[0]
                 score = float(score) if pd.notna(score) else None
-                episodes = row["Episodes"].values[0]
-                episodes = str(episodes) if pd.notna(episodes) else "N/A"
-                premiered = row["Premiered"].values[0]
-                premiered = str(premiered) if pd.notna(premiered) else "N/A"
-                anime_type = row["Type"].values[0]
-                anime_type = str(anime_type) if pd.notna(anime_type) else "N/A"
-                members = row["Members"].values[0]
-                members = int(members) if pd.notna(members) else 0
 
                 try:
                     synopsis = getSynopsis(anime_id, SYNOPSIS_DF)
@@ -142,31 +139,30 @@ def recommend():
                     "anime_id": anime_id,
                     "genres": genres,
                     "score": score,
-                    "episodes": episodes,
-                    "premiered": premiered,
-                    "type": anime_type,
-                    "members": members,
+                    "episodes": str(row["Episodes"].values[0]) if pd.notna(row["Episodes"].values[0]) else "N/A",
+                    "premiered": str(row["Premiered"].values[0]) if pd.notna(row["Premiered"].values[0]) else "N/A",
+                    "type": str(row["Type"].values[0]) if pd.notna(row["Type"].values[0]) else "N/A",
+                    "members": int(row["Members"].values[0]) if pd.notna(row["Members"].values[0]) else 0,
                     "synopsis": synopsis,
-                    "image_url": None,  # filled below
+                    "image_url": None,
                 })
             else:
                 results.append({"name": name, "anime_id": None, "genres": [], "score": None,
                                  "synopsis": "N/A", "image_url": None})
-
         except Exception:
             results.append({"name": name, "anime_id": None, "genres": [], "score": None,
                              "synopsis": "N/A", "image_url": None})
 
-    # ── Fetch all images in one batched AniList request ──
+    # Fetch all images in one batched AniList request
     image_map = fetch_images_batch(results)
     for r in results:
         r["image_url"] = image_map.get(r["name"])
 
-    return jsonify({"user_id": user_id, "recommendations": results}), 200
+    return jsonify({"anime_name": anime_name, "recommendations": results}), 200
 
 
 # ─────────────────────────────
-#  Single anime detail endpoint
+#  Single anime detail
 # ─────────────────────────────
 @app.route("/api/anime/<path:name>", methods=["GET"])
 def anime_detail(name):

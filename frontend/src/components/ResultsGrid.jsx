@@ -3,7 +3,7 @@ import AnimeCard from './AnimeCard';
 import LoadingSkeleton from './LoadingSkeleton';
 import './ResultsGrid.css';
 
-export default function ResultsGrid({ recommendations, loading, userId, onCardClick }) {
+export default function ResultsGrid({ recommendations, loading, animeName, onCardClick }) {
   if (!loading && !recommendations) return null;
 
   return (
@@ -16,7 +16,7 @@ export default function ResultsGrid({ recommendations, loading, userId, onCardCl
           <h2 className="section-title">
             {loading
               ? 'Finding your perfect matches...'
-              : <><span className="gradient-text">Top 10 Picks</span> for User #{userId}</>
+              : <><span className="gradient-text">Top 10 Picks</span> based on <em style={{ color: 'var(--clr-purple-light)', fontStyle: 'normal' }}>{animeName}</em></>
             }
           </h2>
           {!loading && recommendations && (

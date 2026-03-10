@@ -13,7 +13,7 @@ export default function App() {
   const [recommendations, setRecs]      = useState(null);
   const [selectedAnime, setSelected]    = useState(null);
   const [error, setError]               = useState(null);
-  const [lastUserId, setLastUserId]     = useState(null);
+  const [lastAnimeName, setLastName]    = useState(null);
   const resultsRef                      = useRef(null);
 
   // Scroll-reveal observer
@@ -32,19 +32,18 @@ export default function App() {
     document.getElementById('discover')?.scrollIntoView({ behavior: 'smooth' });
   };
 
-  const handleSubmit = async ({ userId, userWeight, contentWeight }) => {
+  const handleSubmit = async ({ animeName, userWeight, contentWeight }) => {
     setLoading(true);
     setRecs(null);
     setError(null);
-    setLastUserId(userId);
+    setLastName(animeName);
 
-    // Scroll to results section
     setTimeout(() => {
       document.getElementById('results')?.scrollIntoView({ behavior: 'smooth' });
     }, 200);
 
     try {
-      const data = await fetchRecommendations(userId, userWeight, contentWeight);
+      const data = await fetchRecommendations(animeName, userWeight, contentWeight);
       setRecs(data.recommendations);
     } catch (err) {
       setError(err.message || 'Failed to fetch recommendations. Is the Flask server running?');
@@ -64,7 +63,7 @@ export default function App() {
           <ResultsGrid
             recommendations={recommendations}
             loading={loading}
-            userId={lastUserId}
+            animeName={lastAnimeName}
             onCardClick={setSelected}
           />
         </div>

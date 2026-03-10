@@ -1,11 +1,11 @@
 const BASE = '/api';
 
-export async function fetchRecommendations(userId, userWeight = 0.5, contentWeight = 0.5) {
+export async function fetchRecommendations(animeName, userWeight = 0.5, contentWeight = 0.5) {
   const res = await fetch(`${BASE}/recommend`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      user_id: parseInt(userId, 10),
+      anime_name: animeName,
       user_weight: userWeight,
       content_weight: contentWeight,
     }),
@@ -16,7 +16,14 @@ export async function fetchRecommendations(userId, userWeight = 0.5, contentWeig
     throw new Error(err.error || `Server error ${res.status}`);
   }
 
-  return res.json(); // { user_id, recommendations: [...] }
+  return res.json(); // { anime_name, recommendations: [...] }
+}
+
+export async function searchAnime(query) {
+  if (!query || query.length < 2) return [];
+  const res = await fetch(`${BASE}/search?q=${encodeURIComponent(query)}`);
+  if (!res.ok) return [];
+  return res.json(); // string[]
 }
 
 export async function fetchAnimeDetail(name) {
