@@ -23,7 +23,7 @@ load_dotenv()
 logger = get_logger(__name__)
 API = os.environ.get("COMET_API_KEY")
 
-class ModeTraining:
+class ModelTraining:
     def __init__(self, data_path):
         self.data_path = data_path
         logger.info("Model Training & COMET ML initialized..")
@@ -104,7 +104,7 @@ class ModeTraining:
                 dropout_rate=0.4,
                 l2_reg=1e-5,
                 batch_size=10000,   
-                epochs=25,
+                epochs=40,
                 start_lr=1e-5,
                 max_lr=1e-3,
                 min_lr=1e-5,
