@@ -6,4 +6,4 @@ Logs/
 *.log
 *.h5
 .env
-.cometml-runs
+.cometml-runs/
