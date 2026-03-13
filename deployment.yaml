@@ -1,0 +1,64 @@
+# ──────────────────────────────────────────────────────────────
+# Kubernetes Deployment — Hybrid Anime Recommendation System
+# Image: built from Dockerfile (Flask API + React frontend)
+# Flask listens on PORT=5000 (set in Dockerfile ENV PORT=5000)
+# ──────────────────────────────────────────────────────────────
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: anime-recommender
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: anime-recommender
+  template:
+    metadata:
+      labels:
+        app: anime-recommender
+    spec:
+      containers:
+      - name: anime-recommender-container
+        image: gcr.io/anime-recommendation-489009/ml-project:latest   # ← replace YOUR_PROJECT_ID
+        ports:
+        - containerPort: 5000      # Flask default port (app.py: os.environ.get("PORT", 5000))
+        env:
+        - name: PORT
+          value: "5000"            # Explicitly pass PORT so Flask picks it up
+        resources:
+          requests:
+            memory: "2Gi"          # TensorFlow model needs at least 2 GB RAM
+            cpu: "500m"
+          limits:
+            memory: "4Gi"          # Hard cap — adjust based on your GKE node size
+            cpu: "1000m"
+        readinessProbe:            # K8s waits until Flask is ready before sending traffic
+          httpGet:
+            path: /api/health
+            port: 5000
+          initialDelaySeconds: 30  # TF model load takes time
+          periodSeconds: 10
+        livenessProbe:             # Restart container if Flask becomes unresponsive
+          httpGet:
+            path: /api/health
+            port: 5000
+          initialDelaySeconds: 60
+          periodSeconds: 20
+
+---
+# ──────────────────────────────────────────────────────────────
+# Kubernetes Service — exposes the deployment via a LoadBalancer
+# External traffic hits port 80 → forwarded to Flask on port 5000
+# ──────────────────────────────────────────────────────────────
+apiVersion: v1
+kind: Service
+metadata:
+  name: anime-recommender-service
+spec:
+  type: LoadBalancer
+  selector:
+    app: anime-recommender
+  ports:
+  - protocol: TCP
+    port: 80          # Port exposed to the internet
+    targetPort: 5000  # Port Flask listens on inside the container
