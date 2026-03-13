@@ -1,0 +1,43 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.egg-info/
+.eggs/
+dist/
+*.log
+
+# Virtual environments
+anime_venv/
+venv/
+.venv/
+env/
+
+# Frontend build artifacts & dev deps
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+
+# Version control & IDE
+.git/
+.gitignore
+.vscode/
+.idea/
+*.DS_Store
+
+# Notebooks (not needed in production)
+notebooks/
+*.ipynb
+
+# Test files
+test.py
+
+# DVC cache (data is expected in artifacts/)
+.dvc/
+.dvcignore
+
+# Credentials (NEVER bake these into the image!)
+*.json
+service_account*.json
+gcp-credentials*.json

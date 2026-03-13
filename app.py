@@ -1,7 +1,7 @@
 import os
 import requests
 import pandas as pd
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 
 from config.path_config import *
@@ -10,6 +10,9 @@ from pipelines.prediction_pipeline import recommendation_by_anime_name
 
 app = Flask(__name__)
 CORS(app)
+
+# Path to the built React app (populated during Docker build via `npm run build`)
+FRONTEND_DIST = os.path.join(os.path.dirname(__file__), "frontend", "dist")
 
 
 # ─────────────────────────────
@@ -197,6 +200,23 @@ def anime_detail(name):
         return jsonify({"error": str(e)}), 500
 
 
+# ─────────────────────────────
+#  Serve React frontend (production)
+#  API routes registered above take priority.
+#  This catch-all serves index.html for any non-API path so React
+#  Router handles client-side navigation correctly.
+# ─────────────────────────────
+@app.route("/", defaults={"path": ""})
+@app.route("/<path:path>")
+def serve_frontend(path):
+    import os as _os
+    target = _os.path.join(FRONTEND_DIST, path)
+    if path and _os.path.exists(target):
+        return send_from_directory(FRONTEND_DIST, path)
+    return send_from_directory(FRONTEND_DIST, "index.html")
+
+
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port, debug=True)
+
