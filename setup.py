@@ -7,7 +7,11 @@ setup(
     name='Hybrid_Anime_Recommendation_System',
     version='0.2',
     author='Hareesh Kumar',
-    package_data=find_packages(),
+    packages=find_packages(),
+    package_data={              
+        '': ['*.yaml', '*.json', '*.txt'],
+    },
     install_requires=requirements
     
 )
+  
