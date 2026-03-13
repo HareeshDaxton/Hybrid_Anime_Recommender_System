@@ -1,9 +1,65 @@
+# anime_venv/
+# artifacts/*
+# !artifacts/*.dvc
+# __pycache__/
+# Logs/
+# *.log
+# *.h5
+# .env
+# .cometml-runs/
+
+# Virtual environments
 anime_venv/
+venv/
+.venv/
+env/
+
+# Artifacts (tracked by DVC, not git)
 artifacts/*
 !artifacts/*.dvc
+
+# Python cache
 __pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.egg-info/
+.eggs/
+dist/
+
+# Logs
 Logs/
 *.log
+
+# Model files
 *.h5
+*.pkl
+*.pt
+*.pth
+
+# Environment & secrets
 .env
 .cometml-runs/
+service_account*.json
+gcp-credentials*.json
+*-key.json
+
+# DVC internals
+.dvc/tmp
+.dvc/cache
+
+# Frontend
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+
+# Notebooks
+notebooks/
+*.ipynb
+.ipynb_checkpoints/
+
+# IDE
+.vscode/
+.idea/
+*.DS_Store
+Thumbs.db
