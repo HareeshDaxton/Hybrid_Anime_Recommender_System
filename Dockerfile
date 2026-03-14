@@ -18,8 +18,9 @@ RUN npm run build
 # ══════════════════════════════════════════════════════════════
 # Stage 2 — Python Flask API + serve built frontend
 # ══════════════════════════════════════════════════════════════
-FROM python:3.8-slim
+# FROM python:3.8-slim
 
+FROM python:3.11-slim
 # Prevent .pyc files and buffer output
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1
@@ -42,7 +43,8 @@ WORKDIR /app
 
 # ── Python dependencies (cached layer) ──
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+# RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir --retries 5 --timeout 120 -r requirements.txt
 
 # ── Application source code & ML artifacts ──
 COPY . .

@@ -15,8 +15,11 @@ venv/
 env/
 
 # Artifacts (tracked by DVC, not git)
-artifacts/*
-!artifacts/*.dvc
+artifacts/raw/
+artifacts/processed/
+artifacts/model/
+artifacts/weights/
+artifacts/model_checkpoint/
 
 # Python cache
 __pycache__/
@@ -52,6 +55,8 @@ gcp-credentials*.json
 frontend/node_modules/
 frontend/dist/
 frontend/.vite/
+
+
 
 # Notebooks
 notebooks/
