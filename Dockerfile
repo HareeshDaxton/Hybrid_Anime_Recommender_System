@@ -30,7 +30,8 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 ENV PORT=5000
 
 # ── System dependencies required by TensorFlow & HDF5 ──
-RUN apt-get update && apt-get install -y \
+# RUN apt-get update && apt-get install -y \
+RUN apt-get update -qq && apt-get install -y -qq --no-install-recommends \
     build-essential \
     libopenblas-dev \
     libhdf5-dev \
