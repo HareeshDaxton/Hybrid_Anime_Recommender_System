@@ -19,7 +19,8 @@ pipeline {
     
     environment {
         VENV_DIR = 'anime_venv'
-        GCP_PROJECT='anime-recommendation-489009'
+        GCP_PROJECT='anime-recommendation-489009	
+'
         GCLOUD_PATH = "/usr/bin"
         KUBECTL_AUTH_PLUGIN = "/usr/bin"
         JAVA_OPTS = '-Dorg.jenkinsci.plugins.durabletask.BourneShellScript.HEARTBEAT_CHECK_INTERVAL=86400'
