@@ -1,3 +1,48 @@
+# # # # Python
+# # # __pycache__/
+# # # *.pyc
+# # # *.pyo
+# # # *.pyd
+# # # *.egg-info/
+# # # .eggs/
+# # # dist/
+# # # *.log
+
+# # # # Virtual environments
+# # # anime_venv/
+# # # venv/
+# # # .venv/
+# # # env/
+
+# # # # Frontend build artifacts & dev deps
+# # # frontend/node_modules/
+# # # frontend/dist/
+# # # frontend/.vite/
+
+# # # # Version control & IDE
+# # # .git/
+# # # .gitignore
+# # # .vscode/
+# # # .idea/
+# # # *.DS_Store
+
+# # # # Notebooks (not needed in production)
+# # # notebooks/
+# # # *.ipynb
+
+# # # # Test files
+# # # test.py
+
+# # # # DVC cache (data is expected in artifacts/)
+# # # .dvc/
+# # # .dvcignore
+
+# # # # Credentials (NEVER bake these into the image!)
+# # # *.json
+# # # service_account*.json
+# # # gcp-credentials*.json
+
+
 # # # Python
 # # __pycache__/
 # # *.pyc
@@ -16,7 +61,6 @@
 
 # # # Frontend build artifacts & dev deps
 # # frontend/node_modules/
-# # frontend/dist/
 # # frontend/.vite/
 
 # # # Version control & IDE
@@ -33,94 +77,69 @@
 # # # Test files
 # # test.py
 
-# # # DVC cache (data is expected in artifacts/)
+# # # DVC cache (data pulled at runtime via DVC)
 # # .dvc/
 # # .dvcignore
+# # artifacts/
 
-# # # Credentials (NEVER bake these into the image!)
-# # *.json
+# # # Environment files
+# # .env
+# # .cometml-runs/
+
+# # # Credentials (never bake into image)
 # # service_account*.json
 # # gcp-credentials*.json
+# # *-key.json
+
+# # # Jenkins
+# # Logs/
+# # *.h5.
 
 
-# # Python
 # __pycache__/
 # *.pyc
-# *.pyo
-# *.pyd
-# *.egg-info/
-# .eggs/
-# dist/
 # *.log
 
-# # Virtual environments
 # anime_venv/
 # venv/
 # .venv/
 # env/
 
-# # Frontend build artifacts & dev deps
+# .git/
+
 # frontend/node_modules/
 # frontend/.vite/
 
-# # Version control & IDE
-# .git/
-# .gitignore
-# .vscode/
-# .idea/
-# *.DS_Store
-
-# # Notebooks (not needed in production)
 # notebooks/
 # *.ipynb
 
-# # Test files
-# test.py
+# .dvc/cache
 
-# # DVC cache (data pulled at runtime via DVC)
-# .dvc/
-# .dvcignore
-# artifacts/
+# artifacts/*
+# !artifacts/*.dvc
 
-# # Environment files
 # .env
 # .cometml-runs/
 
-# # Credentials (never bake into image)
 # service_account*.json
 # gcp-credentials*.json
 # *-key.json
 
-# # Jenkins
-# Logs/
-# *.h5.
-
-
 __pycache__/
 *.pyc
 *.log
-
 anime_venv/
 venv/
 .venv/
 env/
-
 .git/
-
 frontend/node_modules/
 frontend/.vite/
-
 notebooks/
 *.ipynb
-
 .dvc/cache
-
-artifacts/*
-!artifacts/*.dvc
-
 .env
 .cometml-runs/
-
 service_account*.json
 gcp-credentials*.json
 *-key.json
