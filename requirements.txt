@@ -1,21 +1,3 @@
-# pandas
-# numpy
-# setuptools
-# requests
-# google-cloud-storage
-# pyyaml
-# matplotlib
-# tensorflow
-# wordcloud
-# comet-ml
-# dvc
-# dvc-gs
-# flask
-# flask-cors
-# joblib
-# python-dotenv
-# simplejson>=3.19.0
-
 
 pandas
 numpy
