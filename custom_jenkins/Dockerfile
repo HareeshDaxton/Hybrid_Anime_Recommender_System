@@ -65,6 +65,13 @@ RUN apt-get update -y && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
+RUN curl -fsSL https://packages.cloud.google.com/apt/doc/apt-key.gpg | gpg --dearmor -o /usr/share/keyrings/cloud.google.gpg && \
+    echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main" > /etc/apt/sources.list.d/google-cloud-sdk.list && \
+    apt-get update -y && \
+    apt-get install -y google-cloud-sdk google-cloud-sdk-gke-gcloud-auth-plugin kubectl && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
 # Install Docker
 RUN install -m 0755 -d /etc/apt/keyrings && \
     curl -fsSL https://download.docker.com/linux/debian/gpg -o /etc/apt/keyrings/docker.asc && \
@@ -75,7 +82,7 @@ RUN install -m 0755 -d /etc/apt/keyrings && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-    
+
 RUN groupadd -f docker && \
     usermod -aG docker jenkins
 
