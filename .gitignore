@@ -29,4 +29,8 @@ notebooks/
 *.DS_Store
 
 
-artifacts/*
+artifacts/raw
+artifacts/model
+artifacts/model_checkpoint
+artifacts/processed
+artifacts/weights
