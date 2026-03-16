@@ -1,0 +1,4 @@
+[core]
+    remote = myremoteanime
+['remote "myremoteanime"']
+    url = gs://dvc-anime-recommendation

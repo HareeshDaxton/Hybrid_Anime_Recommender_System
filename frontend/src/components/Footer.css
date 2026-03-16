@@ -1,0 +1,55 @@
+.footer {
+  background: var(--clr-bg-2);
+  border-top: 1px solid var(--clr-border);
+  padding-block: var(--space-2xl);
+}
+.footer-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-lg);
+  text-align: center;
+}
+.footer-brand { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.footer-logo {
+  font-family: 'Outfit', sans-serif;
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: var(--clr-text-primary);
+}
+.footer-accent {
+  background: var(--gradient-primary);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.footer-tagline {
+  font-size: 0.82rem;
+  color: var(--clr-text-muted);
+}
+.footer-tech { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+.footer-tech-label {
+  font-size: 0.68rem;
+  letter-spacing: 0.12em;
+  color: var(--clr-text-muted);
+  font-weight: 700;
+}
+.footer-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+}
+.footer-chip {
+  padding: 4px 14px;
+  background: rgba(124,58,237,0.1);
+  border: 1px solid rgba(124,58,237,0.25);
+  border-radius: var(--radius-pill);
+  font-size: 0.75rem;
+  color: var(--clr-purple-light);
+  font-weight: 500;
+}
+.footer-copy {
+  font-size: 0.8rem;
+  color: var(--clr-text-muted);
+}
